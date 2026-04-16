@@ -11,10 +11,13 @@ const KILL_INFO = {
   private: { emoji: '🔒', label: 'PRIVATE', glow: '#7c3aed', accent: '#a78bfa' },
 }
 
-function generateKillCode(url, killType, message, info, now) {
+function generateKillCode(url, killType, message, info, now, scriptUrl) {
   return `<!-- ☠️ LINK KILLER — paste before </body> -->
 <script>
 (function() {
+  var SCRIPT_URL = "${scriptUrl}";
+  var TARGET_URL = "${url}";
+
   var cfg = {
     url: "${url}",
     label: "${info.label}",
@@ -25,226 +28,242 @@ function generateKillCode(url, killType, message, info, now) {
     accent: "${info.accent}",
   };
 
-  var styles = \`
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-    #lk-root * { box-sizing: border-box; margin: 0; padding: 0; }
-    @keyframes lk-glitch1 {
-      0%,100% { clip-path: inset(0 0 98% 0); transform: translate(-4px,0); }
-      25%      { clip-path: inset(30% 0 50% 0); transform: translate(4px,0); }
-      50%      { clip-path: inset(60% 0 20% 0); transform: translate(-2px,0); }
-      75%      { clip-path: inset(80% 0 5% 0);  transform: translate(2px,0); }
-    }
-    @keyframes lk-glitch2 {
-      0%,100% { clip-path: inset(50% 0 30% 0); transform: translate(4px,0); }
-      33%      { clip-path: inset(10% 0 70% 0); transform: translate(-4px,0); }
-      66%      { clip-path: inset(85% 0 2% 0);  transform: translate(3px,0); }
-    }
-    @keyframes lk-flicker {
-      0%,19%,21%,23%,25%,54%,56%,100% { opacity: 1; }
-      20%,24%,55% { opacity: 0.4; }
-    }
-    @keyframes lk-scanline {
-      0%   { transform: translateY(-100%); }
-      100% { transform: translateY(100vh); }
-    }
-    @keyframes lk-fadein {
-      from { opacity: 0; transform: translateY(30px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes lk-pulse {
-      0%,100% { opacity: 0.08; transform: translate(-50%,-50%) scale(1); }
-      50%      { opacity: 0.18; transform: translate(-50%,-50%) scale(1.1); }
-    }
-    @keyframes lk-border {
-      0%,100% { opacity: 0.4; } 50% { opacity: 1; }
-    }
-    #lk-root {
-      position: fixed; inset: 0; z-index: 2147483647;
-      background: #000;
-      font-family: 'Inter', -apple-system, sans-serif;
-      overflow: hidden;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .lk-noise {
-      position: absolute; inset: 0; pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      opacity: 0.35;
-    }
-    .lk-scanline-wrap { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-    .lk-scanline-line {
-      position: absolute; left: 0; right: 0; height: 120px;
-      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.03), transparent);
-      animation: lk-scanline 4s linear infinite;
-    }
-    .lk-lines {
-      position: absolute; inset: 0; pointer-events: none;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px);
-    }
-    .lk-glow {
-      position: absolute; top: 50%; left: 50%;
-      width: 900px; height: 900px; border-radius: 50%;
-      filter: blur(180px); pointer-events: none;
-      animation: lk-pulse 4s ease-in-out infinite;
-    }
-    .lk-center {
-      position: relative; z-index: 2;
-      display: flex; flex-direction: column; align-items: center;
-      padding: 24px; text-align: center; width: 100%; max-width: 600px;
-    }
-    .lk-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 20px; border-radius: 999px;
-      font-size: 11px; font-weight: 800; letter-spacing: 0.2em;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.05);
-      margin-bottom: 36px;
-      animation: lk-fadein 0.6s ease both;
-    }
-    .lk-skull {
-      font-size: 100px; line-height: 1; margin-bottom: 20px;
-      animation: lk-fadein 0.6s ease 0.1s both, lk-flicker 5s ease 2s infinite;
-      filter: drop-shadow(0 0 60px var(--accent));
-    }
-    .lk-title-wrap { position: relative; margin-bottom: 6px; animation: lk-fadein 0.6s ease 0.2s both; }
-    .lk-title {
-      font-size: clamp(52px, 10vw, 96px); font-weight: 900; letter-spacing: -4px; line-height: 1;
-      background: linear-gradient(135deg, #fff 0%, var(--accent) 60%, #ff0000 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; position: relative; z-index: 1;
-    }
-    .lk-title-ghost {
-      position: absolute; inset: 0;
-      font-size: clamp(52px, 10vw, 96px); font-weight: 900; letter-spacing: -4px; line-height: 1;
-      color: var(--accent); opacity: 0.7; animation: lk-glitch1 3s infinite linear;
-    }
-    .lk-title-ghost2 {
-      position: absolute; inset: 0;
-      font-size: clamp(52px, 10vw, 96px); font-weight: 900; letter-spacing: -4px; line-height: 1;
-      color: #ff0000; opacity: 0.5; animation: lk-glitch2 3.5s infinite linear;
-    }
-    .lk-subtitle {
-      font-size: 11px; letter-spacing: 0.3em; font-weight: 700;
-      color: rgba(255,255,255,0.25); margin-bottom: 40px;
-      text-transform: uppercase; animation: lk-fadein 0.6s ease 0.3s both;
-    }
-    .lk-card {
-      width: 100%; border-radius: 20px; overflow: hidden;
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-      animation: lk-fadein 0.8s ease 0.4s both; margin-bottom: 16px; position: relative;
-    }
-    .lk-card-top {
-      display: flex; align-items: center; gap: 8px; padding: 10px 18px;
-      background: rgba(255,0,0,0.06); border-bottom: 1px solid rgba(255,0,0,0.1);
-    }
-    .lk-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .lk-url-bar {
-      flex: 1; padding: 4px 12px; border-radius: 6px;
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07);
-      font-size: 11px; font-family: monospace; color: rgba(255,255,255,0.2);
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .lk-card-body { padding: 24px; }
-    .lk-field-label {
-      font-size: 10px; font-weight: 800; letter-spacing: 0.2em;
-      text-transform: uppercase; color: rgba(255,255,255,0.2); margin-bottom: 8px;
-    }
-    .lk-url-box {
-      padding: 14px 16px; border-radius: 12px;
-      background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.15); margin-bottom: 20px;
-    }
-    .lk-url-text {
-      font-family: monospace; font-size: 13px; color: #f87171;
-      text-decoration: line-through; text-decoration-color: rgba(239,68,68,0.5);
-      word-break: break-all; line-height: 1.6;
-    }
-    .lk-msg-box { padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
-    .lk-msg-text { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.8; }
-    .lk-terminal {
-      width: 100%; border-radius: 14px; overflow: hidden;
-      background: #000; border: 1px solid rgba(255,255,255,0.08);
-      animation: lk-fadein 0.8s ease 0.55s both; margin-bottom: 24px;
-    }
-    .lk-terminal-top {
-      display: flex; align-items: center; gap: 6px; padding: 10px 14px;
-      background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-    .lk-terminal-body { padding: 16px 18px; }
-    .lk-terminal-line { font-family: monospace; font-size: 12px; color: rgba(255,255,255,0.3); line-height: 2; display: flex; gap: 8px; }
-    .lk-terminal-line .p { color: #4ade80; }
-    .lk-terminal-line .e { color: #f87171; }
-    .lk-terminal-line .w { color: #fbbf24; }
-    .lk-terminal-line .a { color: var(--accent); }
-    .lk-footer {
-      font-size: 10px; letter-spacing: 0.2em; font-weight: 700;
-      color: rgba(255,255,255,0.1); text-transform: uppercase;
-      animation: lk-fadein 0.8s ease 0.7s both;
-    }
-    .lk-border-anim {
-      position: absolute; inset: 0; pointer-events: none; border-radius: 20px;
-      border: 1px solid var(--accent); opacity: 0; animation: lk-border 2s ease-in-out 1s infinite;
-    }
-  \`;
+  function showKillScreen() {
+    var styles = \`
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+      #lk-root * { box-sizing: border-box; margin: 0; padding: 0; }
+      @keyframes lk-glitch1 {
+        0%,100% { clip-path: inset(0 0 98% 0); transform: translate(-4px,0); }
+        25%      { clip-path: inset(30% 0 50% 0); transform: translate(4px,0); }
+        50%      { clip-path: inset(60% 0 20% 0); transform: translate(-2px,0); }
+        75%      { clip-path: inset(80% 0 5% 0);  transform: translate(2px,0); }
+      }
+      @keyframes lk-glitch2 {
+        0%,100% { clip-path: inset(50% 0 30% 0); transform: translate(4px,0); }
+        33%      { clip-path: inset(10% 0 70% 0); transform: translate(-4px,0); }
+        66%      { clip-path: inset(85% 0 2% 0);  transform: translate(3px,0); }
+      }
+      @keyframes lk-flicker {
+        0%,19%,21%,23%,25%,54%,56%,100% { opacity: 1; }
+        20%,24%,55% { opacity: 0.4; }
+      }
+      @keyframes lk-scanline {
+        0%   { transform: translateY(-100%); }
+        100% { transform: translateY(100vh); }
+      }
+      @keyframes lk-fadein {
+        from { opacity: 0; transform: translateY(30px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes lk-pulse {
+        0%,100% { opacity: 0.08; transform: translate(-50%,-50%) scale(1); }
+        50%      { opacity: 0.18; transform: translate(-50%,-50%) scale(1.1); }
+      }
+      @keyframes lk-border {
+        0%,100% { opacity: 0.4; } 50% { opacity: 1; }
+      }
+      #lk-root {
+        position: fixed; inset: 0; z-index: 2147483647;
+        background: #000;
+        font-family: 'Inter', -apple-system, sans-serif;
+        overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .lk-noise {
+        position: absolute; inset: 0; pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+        opacity: 0.35;
+      }
+      .lk-scanline-wrap { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+      .lk-scanline-line {
+        position: absolute; left: 0; right: 0; height: 120px;
+        background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.03), transparent);
+        animation: lk-scanline 4s linear infinite;
+      }
+      .lk-lines {
+        position: absolute; inset: 0; pointer-events: none;
+        background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px);
+      }
+      .lk-glow {
+        position: absolute; top: 50%; left: 50%;
+        width: 900px; height: 900px; border-radius: 50%;
+        filter: blur(180px); pointer-events: none;
+        animation: lk-pulse 4s ease-in-out infinite;
+      }
+      .lk-center {
+        position: relative; z-index: 2;
+        display: flex; flex-direction: column; align-items: center;
+        padding: 24px; text-align: center; width: 100%; max-width: 600px;
+      }
+      .lk-badge {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 8px 20px; border-radius: 999px;
+        font-size: 11px; font-weight: 800; letter-spacing: 0.2em;
+        border: 1px solid rgba(255,255,255,0.15);
+        background: rgba(255,255,255,0.05);
+        margin-bottom: 36px;
+        animation: lk-fadein 0.6s ease both;
+      }
+      .lk-skull {
+        font-size: 100px; line-height: 1; margin-bottom: 20px;
+        animation: lk-fadein 0.6s ease 0.1s both, lk-flicker 5s ease 2s infinite;
+        filter: drop-shadow(0 0 60px var(--accent));
+      }
+      .lk-title-wrap { position: relative; margin-bottom: 6px; animation: lk-fadein 0.6s ease 0.2s both; }
+      .lk-title {
+        font-size: clamp(52px, 10vw, 96px); font-weight: 900; letter-spacing: -4px; line-height: 1;
+        background: linear-gradient(135deg, #fff 0%, var(--accent) 60%, #ff0000 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; position: relative; z-index: 1;
+      }
+      .lk-title-ghost {
+        position: absolute; inset: 0;
+        font-size: clamp(52px, 10vw, 96px); font-weight: 900; letter-spacing: -4px; line-height: 1;
+        color: var(--accent); opacity: 0.7; animation: lk-glitch1 3s infinite linear;
+      }
+      .lk-title-ghost2 {
+        position: absolute; inset: 0;
+        font-size: clamp(52px, 10vw, 96px); font-weight: 900; letter-spacing: -4px; line-height: 1;
+        color: #ff0000; opacity: 0.5; animation: lk-glitch2 3.5s infinite linear;
+      }
+      .lk-subtitle {
+        font-size: 11px; letter-spacing: 0.3em; font-weight: 700;
+        color: rgba(255,255,255,0.25); margin-bottom: 40px;
+        text-transform: uppercase; animation: lk-fadein 0.6s ease 0.3s both;
+      }
+      .lk-card {
+        width: 100%; border-radius: 20px; overflow: hidden;
+        background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+        animation: lk-fadein 0.8s ease 0.4s both; margin-bottom: 16px; position: relative;
+      }
+      .lk-card-top {
+        display: flex; align-items: center; gap: 8px; padding: 10px 18px;
+        background: rgba(255,0,0,0.06); border-bottom: 1px solid rgba(255,0,0,0.1);
+      }
+      .lk-dot { width: 10px; height: 10px; border-radius: 50%; }
+      .lk-url-bar {
+        flex: 1; padding: 4px 12px; border-radius: 6px;
+        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07);
+        font-size: 11px; font-family: monospace; color: rgba(255,255,255,0.2);
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
+      .lk-card-body { padding: 24px; }
+      .lk-field-label {
+        font-size: 10px; font-weight: 800; letter-spacing: 0.2em;
+        text-transform: uppercase; color: rgba(255,255,255,0.2); margin-bottom: 8px;
+      }
+      .lk-url-box {
+        padding: 14px 16px; border-radius: 12px;
+        background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.15); margin-bottom: 20px;
+      }
+      .lk-url-text {
+        font-family: monospace; font-size: 13px; color: #f87171;
+        text-decoration: line-through; text-decoration-color: rgba(239,68,68,0.5);
+        word-break: break-all; line-height: 1.6;
+      }
+      .lk-msg-box { padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+      .lk-msg-text { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.8; }
+      .lk-terminal {
+        width: 100%; border-radius: 14px; overflow: hidden;
+        background: #000; border: 1px solid rgba(255,255,255,0.08);
+        animation: lk-fadein 0.8s ease 0.55s both; margin-bottom: 24px;
+      }
+      .lk-terminal-top {
+        display: flex; align-items: center; gap: 6px; padding: 10px 14px;
+        background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.06);
+      }
+      .lk-terminal-body { padding: 16px 18px; }
+      .lk-terminal-line { font-family: monospace; font-size: 12px; color: rgba(255,255,255,0.3); line-height: 2; display: flex; gap: 8px; }
+      .lk-terminal-line .p { color: #4ade80; }
+      .lk-terminal-line .e { color: #f87171; }
+      .lk-terminal-line .w { color: #fbbf24; }
+      .lk-terminal-line .a { color: var(--accent); }
+      .lk-footer {
+        font-size: 10px; letter-spacing: 0.2em; font-weight: 700;
+        color: rgba(255,255,255,0.1); text-transform: uppercase;
+        animation: lk-fadein 0.8s ease 0.7s both;
+      }
+      .lk-border-anim {
+        position: absolute; inset: 0; pointer-events: none; border-radius: 20px;
+        border: 1px solid var(--accent); opacity: 0; animation: lk-border 2s ease-in-out 1s infinite;
+      }
+    \`;
 
-  var styleEl = document.createElement('style');
-  styleEl.textContent = styles;
-  document.head.appendChild(styleEl);
+    var styleEl = document.createElement('style');
+    styleEl.textContent = styles;
+    document.head.appendChild(styleEl);
 
-  var root = document.createElement('div');
-  root.id = 'lk-root';
-  root.style.setProperty('--accent', cfg.accent);
-  root.style.setProperty('--glow', cfg.glow);
+    var root = document.createElement('div');
+    root.id = 'lk-root';
+    root.style.setProperty('--accent', cfg.accent);
+    root.style.setProperty('--glow', cfg.glow);
 
-  root.innerHTML = \`
-    <div class="lk-noise"></div>
-    <div class="lk-lines"></div>
-    <div class="lk-scanline-wrap"><div class="lk-scanline-line"></div></div>
-    <div class="lk-glow" style="background:\${cfg.glow}"></div>
-    <div class="lk-center">
-      <div class="lk-badge" style="color:\${cfg.accent}">\${cfg.emoji} &nbsp; \${cfg.label} &nbsp; \${cfg.emoji}</div>
-      <div class="lk-skull">☠️</div>
-      <div class="lk-title-wrap">
-        <div class="lk-title-ghost">LINK KILLED</div>
-        <div class="lk-title-ghost2">LINK KILLED</div>
-        <div class="lk-title">LINK KILLED</div>
+    root.innerHTML = \`
+      <div class="lk-noise"></div>
+      <div class="lk-lines"></div>
+      <div class="lk-scanline-wrap"><div class="lk-scanline-line"></div></div>
+      <div class="lk-glow" style="background:\${cfg.glow}"></div>
+      <div class="lk-center">
+        <div class="lk-badge" style="color:\${cfg.accent}">\${cfg.emoji} &nbsp; \${cfg.label} &nbsp; \${cfg.emoji}</div>
+        <div class="lk-skull">☠️</div>
+        <div class="lk-title-wrap">
+          <div class="lk-title-ghost">LINK KILLED</div>
+          <div class="lk-title-ghost2">LINK KILLED</div>
+          <div class="lk-title">LINK KILLED</div>
+        </div>
+        <div class="lk-subtitle">\${cfg.killedAt} &nbsp;·&nbsp; access denied</div>
+        <div class="lk-card">
+          <div class="lk-border-anim"></div>
+          <div class="lk-card-top">
+            <div class="lk-dot" style="background:#ff5f57"></div>
+            <div class="lk-dot" style="background:#febc2e"></div>
+            <div class="lk-dot" style="background:#28c840"></div>
+            <div class="lk-url-bar">\${cfg.url}</div>
+          </div>
+          <div class="lk-card-body">
+            <div class="lk-field-label">⚰️ &nbsp; Killed URL</div>
+            <div class="lk-url-box"><div class="lk-url-text">\${cfg.url}</div></div>
+            \${cfg.message ? \`
+              <div class="lk-field-label">💬 &nbsp; Message</div>
+              <div class="lk-msg-box"><div class="lk-msg-text">\${cfg.message}</div></div>
+            \` : ''}
+          </div>
+        </div>
+        <div class="lk-terminal">
+          <div class="lk-terminal-top">
+            <div class="lk-dot" style="background:#ff5f57"></div>
+            <div class="lk-dot" style="background:#febc2e"></div>
+            <div class="lk-dot" style="background:#28c840"></div>
+            <span style="font-size:11px;font-family:monospace;color:rgba(255,255,255,0.2);margin-left:8px">kill.log</span>
+          </div>
+          <div class="lk-terminal-body">
+            <div class="lk-terminal-line"><span class="p">›</span><span>Checking kill status...</span><span class="p">confirmed</span></div>
+            <div class="lk-terminal-line"><span class="p">›</span><span>Target:</span><span class="e">\${cfg.url.substring(0,40)}\${cfg.url.length>40?'...':''}</span></div>
+            <div class="lk-terminal-line"><span class="p">›</span><span>Kill type:</span><span class="a">\${cfg.label}</span></div>
+            <div class="lk-terminal-line"><span class="p">›</span><span>Timestamp:</span><span class="w">\${cfg.killedAt}</span></div>
+            <div class="lk-terminal-line"><span class="e">✗</span><span style="color:#f87171;font-weight:700">ACCESS TERMINATED — THIS SITE HAS BEEN KILLED</span></div>
+          </div>
+        </div>
+        <div class="lk-footer">Powered by Link Killer ☠️</div>
       </div>
-      <div class="lk-subtitle">\${cfg.killedAt} &nbsp;·&nbsp; access denied</div>
-      <div class="lk-card">
-        <div class="lk-border-anim"></div>
-        <div class="lk-card-top">
-          <div class="lk-dot" style="background:#ff5f57"></div>
-          <div class="lk-dot" style="background:#febc2e"></div>
-          <div class="lk-dot" style="background:#28c840"></div>
-          <div class="lk-url-bar">\${cfg.url}</div>
-        </div>
-        <div class="lk-card-body">
-          <div class="lk-field-label">⚰️ &nbsp; Killed URL</div>
-          <div class="lk-url-box"><div class="lk-url-text">\${cfg.url}</div></div>
-          \${cfg.message ? \`
-            <div class="lk-field-label">💬 &nbsp; Message</div>
-            <div class="lk-msg-box"><div class="lk-msg-text">\${cfg.message}</div></div>
-          \` : ''}
-        </div>
-      </div>
-      <div class="lk-terminal">
-        <div class="lk-terminal-top">
-          <div class="lk-dot" style="background:#ff5f57"></div>
-          <div class="lk-dot" style="background:#febc2e"></div>
-          <div class="lk-dot" style="background:#28c840"></div>
-          <span style="font-size:11px;font-family:monospace;color:rgba(255,255,255,0.2);margin-left:8px">kill.log</span>
-        </div>
-        <div class="lk-terminal-body">
-          <div class="lk-terminal-line"><span class="p">›</span><span>Initializing kill sequence...</span><span class="p">done</span></div>
-          <div class="lk-terminal-line"><span class="p">›</span><span>Target:</span><span class="e">\${cfg.url.substring(0,40)}\${cfg.url.length>40?'...':''}</span></div>
-          <div class="lk-terminal-line"><span class="p">›</span><span>Kill type:</span><span class="a">\${cfg.label}</span></div>
-          <div class="lk-terminal-line"><span class="p">›</span><span>Timestamp:</span><span class="w">\${cfg.killedAt}</span></div>
-          <div class="lk-terminal-line"><span class="e">✗</span><span style="color:#f87171;font-weight:700">ACCESS TERMINATED — THIS SITE HAS BEEN KILLED</span></div>
-        </div>
-      </div>
-      <div class="lk-footer">Powered by Link Killer ☠️</div>
-    </div>
-  \`;
+    \`;
 
-  document.body.style.overflow = 'hidden';
-  document.body.appendChild(root);
+    document.body.style.overflow = 'hidden';
+    document.body.appendChild(root);
+  }
+
+  // ✅ Check status from Google Sheet before showing
+  fetch(SCRIPT_URL + '?check=' + encodeURIComponent(TARGET_URL))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.status === 'ON') {
+        showKillScreen();
+      }
+      // If OFF → site loads normally ✅
+    })
+    .catch(function() {
+      // If fetch fails, show kill screen by default
+      showKillScreen();
+    });
 })();
 <\/script>`
 }
@@ -255,30 +274,20 @@ function KilledContent() {
   const [codeCopied, setCodeCopied] = useState(false)
   const [saved, setSaved] = useState(false)
 
-  const url      = params.get('url') || ''
-  const message  = params.get('message') || ''
-  const killType = params.get('killType') || 'dead'
-  const info     = KILL_INFO[killType] || KILL_INFO.dead
-  const now      = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
-  const killCode = generateKillCode(url, killType, message, info, now)
+  const url       = params.get('url') || ''
+  const message   = params.get('message') || ''
+  const killType  = params.get('killType') || 'dead'
+  const info      = KILL_INFO[killType] || KILL_INFO.dead
+  const now       = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+  const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL || ''
+  const killCode  = generateKillCode(url, killType, message, info, now, scriptUrl)
 
   useEffect(() => {
-    const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL
     if (!scriptUrl || !url || saved) return
     setSaved(true)
-
-    // ✅ Fix: Google Apps Script needs text/plain with no-cors
     const formData = new FormData()
-    formData.append('data', JSON.stringify({
-      url, killType, message,
-      killedAt: now,
-    }))
-
-    fetch(scriptUrl, {
-      method: 'POST',
-      body: formData,
-      mode: 'no-cors',
-    }).catch(() => {})
+    formData.append('data', JSON.stringify({ url, killType, message, killedAt: now }))
+    fetch(scriptUrl, { method: 'POST', body: formData, mode: 'no-cors' }).catch(() => {})
   }, [])
 
   const copyCode = () => {
@@ -300,11 +309,9 @@ function KilledContent() {
         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: info.accent }}>
         {info.emoji} &nbsp;{info.label}
       </div>
-
       <div className="relative z-10 mb-6" style={{ filter: `drop-shadow(0 0 60px ${info.glow})` }}>
         <div className="text-8xl text-center">☠️</div>
       </div>
-
       <h1 className="text-7xl font-black tracking-tighter mb-2 relative z-10 text-center"
         style={{ background: `linear-gradient(135deg, #ffffff 0%, ${info.accent} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
         LINK KILLED
@@ -373,7 +380,7 @@ function KilledContent() {
         style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
         <p className="text-xs font-bold text-zinc-600 uppercase tracking-widest mb-3">How to use</p>
         <div className="space-y-2">
-          {['Copy the kill code above', 'Open your website HTML file', 'Paste just before the </body> tag', 'Save & deploy — site is now killed ☠️'].map((step, i) => (
+          {['Copy the kill code above', 'Open your website HTML file', 'Paste just before the </body> tag', 'Save & deploy — control it live from dashboard ☠️'].map((step, i) => (
             <div key={i} className="flex items-center gap-3">
               <div className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
                 style={{ background: `${info.glow}33`, color: info.accent }}>{i + 1}</div>
